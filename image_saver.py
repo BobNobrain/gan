@@ -141,7 +141,8 @@ class ImageSaver(ModelTrainListener):
     def on_finished(self, make_gif=True, make_img=True):
         for label in range(self.num_classes):
             print('Drawing images for {}...'.format(label))
-            try:
+            # try:
+            if True:
                 if make_gif:
                     self.make_2d_figs_gif(
                         self.figs[label],
@@ -163,5 +164,6 @@ class ImageSaver(ModelTrainListener):
                         self.model.batches_per_period
                     )
                     print('result done')
-            except Exception:
-                print('Exception catched!')
+            # except Exception as e:
+            #     print('Exception catched!')
+            #     print(e)

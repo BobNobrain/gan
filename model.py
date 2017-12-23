@@ -19,7 +19,9 @@ class GANModel:
             latent_dim=2,
             dropout_rate=0.3,
             k_step=5,
-            batches_per_period=20
+            batches_per_period=20,
+            dirname='./weights/',
+            save_period = 100
     ):
         self.sess = None
         # self.num_classes = num_classes
@@ -27,6 +29,8 @@ class GANModel:
         self.k_step = k_step  # Количество шагов, которые могут делать дискриминатор и генератор во внутреннем цикле
         self.batches_per_period = batches_per_period
         self.dropout_rate = dropout_rate
+        self.dirname = dirname
+        self.save_period = save_period
 
         self.L_gen = None
         self.L_dis = None
@@ -91,7 +95,7 @@ class GANModel:
         units_repeat = Reshape((dim1, dim2, dimc))(units_repeat)
         return concatenate([conv2, units_repeat])
 
-    def init_model(self, num_classes, shape, print_summary=False, weights_filename=None):
+    def init_model(self, num_classes, shape, print_summary=False):
         self.init_session()
         self.init_vectors(num_classes, shape)
         w, h, channels = shape
@@ -153,8 +157,6 @@ class GANModel:
 
         gan_model = Model([self.z, self.lbl], discr_gen_z, name='GAN')
         self.gan_model = gan_model
-        if weights_filename:
-            self.load_weights(weights_filename)
         self.gan = gan_model([self.z, self.lbl])
 
         log_dis_img = tf.reduce_mean(-tf.log(discr_img + 1e-10))
@@ -225,6 +227,12 @@ class GANModel:
                     break
                 b0, b1 = next(self.train_batches_it)
                 zp = np.random.randn(batch_size, self.latent_dim)
+
+            # сохраняем модель каждые save_period эпох
+            if i % self.save_period == self.save_period - 1:
+                print('Saving model at {}...'.format(i))
+                self.save_weights(i)
+
             # Периодическое рисование результата
             if not i % self.batches_per_period:
 
@@ -239,9 +247,15 @@ class GANModel:
     def add_listener(self, listener: ModelTrainListener):
         self.listeners.append(listener)
 
-    def save_weights(self, fname):
-        self.gan_model.save_weights(fname)
+    def save_weights(self, step):
+        # self.gan_model.save_weights(fname)
+        saver = tf.train.Saver()
+        saver.save(self.sess, self.dirname + 'n', global_step=step)
 
-    def load_weights(self, fname):
-        self.gan_model.load_weights(fname, by_name=False)
+    def load_weights(self):
+        print('Loading weights...')
+        saver = tf.train.Saver()
+        lp = tf.train.latest_checkpoint(self.dirname)
+        saver.restore(self.sess, lp)
+        print("Model loaded from: {}".format(lp))
 

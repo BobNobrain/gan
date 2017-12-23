@@ -11,21 +11,23 @@ def main():
         latent_dim=2,
         dropout_rate=0.3,
         k_step=5,
-        batches_per_period=20
+        batches_per_period=20,
+        dirname='./weights/cifar10_3/'
     )
     saver = ImageSaver(
         gan,
         num_classes,
         shape,
         n=5,
-        gif_filename='./gif/cifar10_3/{}.gif',
-        im_filename='./img/cifar10_3/{}.jpg'
+        im_filename='./img/cifar10_3/loaded_{}.jpg'
     )
 
     print('Initializing model...')
-    gan.init_model(num_classes, shape, weights_filename='./weights/cifar10_3.h5')
+    gan.init_model(num_classes, shape)
+    gan.load_weights()
 
     print('Drawing images...')
+    saver.on_period(20)
     saver.on_finished(make_gif=False)
 
 main()
