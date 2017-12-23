@@ -75,11 +75,11 @@ class ImageSaver(ModelTrainListener):
                         self.model.lbl: input_lbl,
                         GANModel.get_learning_phase(): 0
                     })
-                digit = x_generated[0].squeeze()
+                image = x_generated[0].squeeze()
                 figure[
                     i * w: (i + 1) * w,
                     j * h: (j + 1) * h
-                ] = digit
+                ] = image
         if show:
             # Визуализация
             plt.figure(figsize=self.fig_size)
@@ -138,27 +138,30 @@ class ImageSaver(ModelTrainListener):
 
             self.periods.append(period)
 
-    def on_finished(self):
+    def on_finished(self, make_gif=True, make_img=True):
         for label in range(self.num_classes):
             print('Drawing images for {}...'.format(label))
             try:
-                self.make_2d_figs_gif(
-                    self.figs[label],
-                    self.periods,
-                    label,
-                    self.gif_filename.format(label),
-                    plt.figure(figsize=self.fig_size),
-                    self.model.batches_per_period
-                )
-                print('gif done')
-                self.make_result_image(
-                    self.figs[label],
-                    # self.periods,
-                    label,
-                    self.im_filename.format(label),
-                    plt.figure(figsize=self.fig_size),
-                    self.model.batches_per_period
-                )
-                print('result done')
+                if make_gif:
+                    self.make_2d_figs_gif(
+                        self.figs[label],
+                        self.periods,
+                        label,
+                        self.gif_filename.format(label),
+                        plt.figure(figsize=self.fig_size),
+                        self.model.batches_per_period
+                    )
+                    print('gif done')
+
+                if make_img:
+                    self.make_result_image(
+                        self.figs[label],
+                        # self.periods,
+                        label,
+                        self.im_filename.format(label),
+                        plt.figure(figsize=self.fig_size),
+                        self.model.batches_per_period
+                    )
+                    print('result done')
             except Exception:
                 print('Exception catched!')
