@@ -39,6 +39,7 @@ class GANModel:
 
         self.generated_z = None
         self.gan = None
+        self.gan_model = None
 
         self.listeners = []
 
@@ -90,7 +91,7 @@ class GANModel:
         units_repeat = Reshape((dim1, dim2, dimc))(units_repeat)
         return concatenate([conv2, units_repeat])
 
-    def init_model(self, num_classes, shape, print_summary=False):
+    def init_model(self, num_classes, shape, print_summary=False, weights_filename=None):
         self.init_session()
         self.init_vectors(num_classes, shape)
         w, h, channels = shape
@@ -151,6 +152,9 @@ class GANModel:
         discr_gen_z = discrim([self.generated_z, self.lbl])
 
         gan_model = Model([self.z, self.lbl], discr_gen_z, name='GAN')
+        self.gan_model = gan_model
+        if weights_filename:
+            self.load_weights(weights_filename)
         self.gan = gan_model([self.z, self.lbl])
 
         log_dis_img = tf.reduce_mean(-tf.log(discr_img + 1e-10))
@@ -236,8 +240,8 @@ class GANModel:
         self.listeners.append(listener)
 
     def save_weights(self, fname):
-        self.gan.save_weights(fname)
+        self.gan_model.save_weights(fname)
 
     def load_weights(self, fname):
-        self.gan.load_weights(fname, by_name=False)
+        self.gan_model.load_weights(fname, by_name=False)
 

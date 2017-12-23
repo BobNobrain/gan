@@ -23,9 +23,7 @@ def main():
     )
 
     print('Initializing model...')
-    gan.init_model(num_classes, shape)
-    print('Loading weights...')
-    gan.load_weights("./weights/cifar10_3.h5")
+    gan.init_model(num_classes, shape, weights_filename='./weights/cifar10_3.h5')
 
     print('Drawing images...')
     saver.on_finished(make_gif=False)
