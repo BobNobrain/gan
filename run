@@ -1,0 +1,5 @@
+#!/bin/bash
+# conda
+. activate env
+# run with logging
+python __init__.py | tee "log.txt"
