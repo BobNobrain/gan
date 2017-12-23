@@ -19,7 +19,8 @@ def main():
         data.num_classes,
         data.shape,
         n=5,
-        gif_filename='./gif/cifar10_2/{}.gif'
+        gif_filename='./gif/cifar10_2/{}.gif',
+        im_filename='./img/cifar10_2/{}.jpg'
     )
 
     print('Initializing model...')

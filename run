@@ -1,5 +1,8 @@
 #!/bin/bash
 # conda
 . activate env
+
+echo `date` > "log.txt"
 # run with logging
-python __init__.py | tee "log.txt"
+python __init__.py 2>&1 | tee -a "log.txt"
+echo `date` >> "log.txt"

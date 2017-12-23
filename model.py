@@ -198,7 +198,7 @@ class GANModel:
         self.test_batches_it = GANModel.gen_batch(dataset.x_test, dataset.y_test_cat, batch_size)
 
         for i in range(epochs):
-            print('.', end='')
+            # print('.', end='')
             b0, b1 = next(self.train_batches_it)
             zp = np.random.randn(batch_size, self.latent_dim)
             # Шаги обучения дискриминатора
@@ -223,7 +223,7 @@ class GANModel:
                 period = i // self.batches_per_period
                 for l in self.listeners:
                     l.on_period(period)
-                print(l_d)
+                print('epoch: {}; loss: {}'.format(i, l_d))
 
         for l in self.listeners:
             l.on_finished()

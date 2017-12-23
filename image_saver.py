@@ -9,6 +9,8 @@ import matplotlib
 from model import GANModel
 from model_train_listener import ModelTrainListener
 
+plt.switch_backend('agg')
+
 
 class ImageSaver(ModelTrainListener):
     def __init__(
@@ -18,7 +20,8 @@ class ImageSaver(ModelTrainListener):
             shape,
             n=10,
             gif_filename='./gif/manifold_{}.gif',
-            gif_title='Label: {}\nBatch: {}'
+            gif_title='Label: {}\nBatch: {}',
+            im_filename='./img/result_{}.jpg'
     ):
         self.num_classes = num_classes
         self.figs = [[] for _ in range(num_classes)]
@@ -32,6 +35,7 @@ class ImageSaver(ModelTrainListener):
 
         self.gif_filename = gif_filename
         self.gif_title = gif_title
+        self.im_filename = im_filename
 
         # Так как сэмплируем из N(0, I), то сетку узлов, в которых генерируем цифры,
         # берем из обратной функции распределения
@@ -96,12 +100,28 @@ class ImageSaver(ModelTrainListener):
         anim = FuncAnimation(fig, update, frames=range(len(figs)), interval=100)
         anim.save(fname, dpi=80, writer='imagemagick')
 
+    def make_result_image(self, figs, c, fname, fig, batches_per_period):
+        w, h, ch = self.shape
+        norm_colors = matplotlib.colors.Normalize(vmin=0, vmax=1, clip=False)
+        if ch == 1:
+            im = plt.imshow(np.zeros((w, h)), cmap='Greys', norm=norm_colors)
+        else:
+            im = plt.imshow(np.zeros(self.shape), norm=norm_colors)
+
+        plt.grid(None)
+        plt.title(self.gif_title.format(c, 0))
+        im.set_array(figs[len(figs) - 1])
+        im.axes.set_title(self.gif_title.format(c, batches_per_period))
+        im.axes.get_xaxis().set_visible(False)
+        im.axes.get_yaxis().set_visible(False)
+        fig.savefig(fname)
+
     def on_period(self, period):
         if period in self.save_periods:
             clear_output()  # Не захламляем output
             # Рисование многообразия для рандомного y
             draw_lbl = np.random.randint(0, self.num_classes)
-            print(draw_lbl)
+            # print(draw_lbl)
             for label in range(self.num_classes):
                 self.figs[label].append(self.draw_manifold(label, show=False))
 
@@ -109,11 +129,25 @@ class ImageSaver(ModelTrainListener):
 
     def on_finished(self):
         for label in range(self.num_classes):
-            self.make_2d_figs_gif(
-                self.figs[label],
-                self.periods,
-                label,
-                self.gif_filename.format(label),
-                plt.figure(figsize=(10, 10)),
-                self.model.batches_per_period
-            )
+            print('Drawing images for {}...'.format(label))
+            try:
+                self.make_2d_figs_gif(
+                    self.figs[label],
+                    self.periods,
+                    label,
+                    self.gif_filename.format(label),
+                    plt.figure(figsize=(10, 10)),
+                    self.model.batches_per_period
+                )
+                print('gif done')
+                self.make_result_image(
+                    self.figs[label],
+                    # self.periods,
+                    label,
+                    self.im_filename.format(label),
+                    plt.figure(figsize=(1, 1)),
+                    self.model.batches_per_period
+                )
+                print('result done')
+            except Exception:
+                print('Exception catched!')
