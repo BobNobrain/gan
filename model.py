@@ -93,12 +93,20 @@ class GANModel:
     def init_model(self, num_classes, shape):
         self.init_session()
         self.init_vectors(num_classes, shape)
+        w, h, channels = shape
+        if w % 4 or h % 4:
+            raise ValueError(
+                'Wrong data shape! Only 4x sizes are supported now! Got {w}x{h}'
+                .format(w=w, h=h)
+            )
+        w = w // 4
+        h = h // 4
 
         with tf.variable_scope('generator'):
             x = concatenate([self.z, self.lbl])
-            x = Dense(7 * 7 * 64, activation='relu')(x)
+            x = Dense(w * h * 64, activation='relu')(x)
             x = Dropout(self.dropout_rate)(x)
-            x = Reshape((7, 7, 64))(x)
+            x = Reshape((w, h, 64))(x)
             x = UpSampling2D(size=(2, 2))(x)
 
             x = Conv2D(64, kernel_size=(5, 5), activation='relu', padding='same')(x)
@@ -106,15 +114,20 @@ class GANModel:
 
             x = Conv2D(32, kernel_size=(3, 3), activation='relu', padding='same')(x)
             x = Dropout(self.dropout_rate)(x)
+
+            x = Conv2D(32, kernel_size=(3, 3), activation='relu', padding='same')(x)
+            x = Dropout(self.dropout_rate)(x)
             x = UpSampling2D(size=(2, 2))(x)
 
-            generated = Conv2D(1, kernel_size=(5, 5), activation='sigmoid', padding='same')(x)
+            generated = Conv2D(channels, kernel_size=(5, 5), activation='sigmoid', padding='same')(x)
 
         generator = Model([self.z, self.lbl], generated, name='generator')
 
         with tf.variable_scope('discrim'):
             x = Conv2D(128, kernel_size=(7, 7), strides=(2, 2), padding='same')(self.img)
             x = self.add_units_to_conv2d(x, self.lbl)
+            x = LeakyReLU()(x)
+            x = Conv2D(128, kernel_size=(3, 3), padding='same')(x)
             x = LeakyReLU()(x)
             x = Dropout(self.dropout_rate)(x)
             x = MaxPool2D((2, 2), padding='same')(x)

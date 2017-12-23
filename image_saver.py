@@ -15,6 +15,7 @@ class ImageSaver(ModelTrainListener):
             self,
             model: GANModel,
             num_classes,
+            shape,
             n=10,
             gif_filename='./gif/manifold_{}.gif',
             gif_title='Label: {}\nBatch: {}'
@@ -22,8 +23,11 @@ class ImageSaver(ModelTrainListener):
         self.num_classes = num_classes
         self.figs = [[] for _ in range(num_classes)]
         self.periods = []
-        self.save_periods = list(range(100)) + list(range(100, 1000, 10))
+        self.save_periods = list(range(100)) +\
+            list(range(100, 1000, 10)) +\
+            list(range(1000, 10000, 500))
         self.n = n
+        self.shape = shape
         self.model = model
 
         self.gif_filename = gif_filename
@@ -40,8 +44,9 @@ class ImageSaver(ModelTrainListener):
 
     def draw_manifold(self, label, show=True):
         # Рисование цифр из многообразия
-        figure = np.zeros((28 * self.n, 28 * self.n))
-        input_lbl = np.zeros((1, 10))
+        w, h, ch = self.shape
+        figure = np.zeros((w * self.n, h * self.n, ch))
+        input_lbl = np.zeros((1, self.num_classes))
         input_lbl[0, label] = 1.
         for i, yi in enumerate(self.grid_x):
             for j, xi in enumerate(self.grid_y):
@@ -57,8 +62,8 @@ class ImageSaver(ModelTrainListener):
                     })
                 digit = x_generated[0].squeeze()
                 figure[
-                    i * 28: (i + 1) * 28,
-                    j * 28: (j + 1) * 28
+                    i * w: (i + 1) * w,
+                    j * h: (j + 1) * h
                 ] = digit
         if show:
             # Визуализация
@@ -72,8 +77,12 @@ class ImageSaver(ModelTrainListener):
         return figure
 
     def make_2d_figs_gif(self, figs, periods, c, fname, fig, batches_per_period):
+        w, h, ch = self.shape
         norm_colors = matplotlib.colors.Normalize(vmin=0, vmax=1, clip=False)
-        im = plt.imshow(np.zeros((28, 28)), cmap='Greys', norm=norm_colors)
+        if ch == 1:
+            im = plt.imshow(np.zeros((w, h)), cmap='Greys', norm=norm_colors)
+        else:
+            im = plt.imshow(np.zeros(self.shape), norm=norm_colors)
         plt.grid(None)
         plt.title(self.gif_title.format(c, 0))
 
@@ -105,5 +114,6 @@ class ImageSaver(ModelTrainListener):
                 self.periods,
                 label,
                 self.gif_filename.format(label),
-                plt.figure(figsize=(10, 10)), self.model.batches_per_period
+                plt.figure(figsize=(10, 10)),
+                self.model.batches_per_period
             )

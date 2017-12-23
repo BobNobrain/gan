@@ -14,7 +14,13 @@ def main():
         k_step=5,
         batches_per_period=20
     )
-    saver = ImageSaver(gan, 10)
+    saver = ImageSaver(
+        gan,
+        data.num_classes,
+        data.shape,
+        n=5,
+        gif_filename='./gif/cifar10_2/{}.gif'
+    )
 
     print('Initializing model...')
     gan.init_model(data.num_classes, data.shape)
