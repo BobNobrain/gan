@@ -21,7 +21,8 @@ class ImageSaver(ModelTrainListener):
             n=10,
             gif_filename='./gif/manifold_{}.gif',
             gif_title='Label: {}\nBatch: {}',
-            im_filename='./img/result_{}.jpg'
+            im_filename='./img/result_{}.jpg',
+            fig_size = (None, None)
     ):
         self.num_classes = num_classes
         self.figs = [[] for _ in range(num_classes)]
@@ -32,6 +33,16 @@ class ImageSaver(ModelTrainListener):
         self.n = n
         self.shape = shape
         self.model = model
+
+        fig_w, fig_h = fig_size
+        i_w, i_h, _ = shape
+        if not fig_w:
+            fig_w = (i_w // 28) * n
+        if not fig_h:
+            fig_h = (i_h // 28) * n
+        self.fig_size = (fig_w, fig_h)
+        print('Fig size: ')
+        print(self.fig_size)
 
         self.gif_filename = gif_filename
         self.gif_title = gif_title
@@ -71,7 +82,7 @@ class ImageSaver(ModelTrainListener):
                 ] = digit
         if show:
             # Визуализация
-            plt.figure(figsize=(10, 10))
+            plt.figure(figsize=self.fig_size)
             plt.imshow(figure, cmap='Greys')
             plt.grid(False)
             ax = plt.gca()
@@ -136,7 +147,7 @@ class ImageSaver(ModelTrainListener):
                     self.periods,
                     label,
                     self.gif_filename.format(label),
-                    plt.figure(figsize=(10, 10)),
+                    plt.figure(figsize=self.fig_size),
                     self.model.batches_per_period
                 )
                 print('gif done')
@@ -145,7 +156,7 @@ class ImageSaver(ModelTrainListener):
                     # self.periods,
                     label,
                     self.im_filename.format(label),
-                    plt.figure(figsize=(1, 1)),
+                    plt.figure(figsize=self.fig_size),
                     self.model.batches_per_period
                 )
                 print('result done')

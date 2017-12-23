@@ -90,7 +90,7 @@ class GANModel:
         units_repeat = Reshape((dim1, dim2, dimc))(units_repeat)
         return concatenate([conv2, units_repeat])
 
-    def init_model(self, num_classes, shape):
+    def init_model(self, num_classes, shape, print_summary=False):
         self.init_session()
         self.init_vectors(num_classes, shape)
         w, h, channels = shape
@@ -122,6 +122,8 @@ class GANModel:
             generated = Conv2D(channels, kernel_size=(5, 5), activation='sigmoid', padding='same')(x)
 
         generator = Model([self.z, self.lbl], generated, name='generator')
+        if print_summary:
+            generator.summary(line_length=120)
 
         with tf.variable_scope('discrim'):
             x = Conv2D(128, kernel_size=(7, 7), strides=(2, 2), padding='same')(self.img)
@@ -140,6 +142,8 @@ class GANModel:
             d = Dense(1, activation='sigmoid')(h)
 
         discrim = Model([self.img, self.lbl], d, name='Discriminator')
+        if print_summary:
+            discrim.summary(line_length=120)
 
         self.generated_z = generator([self.z, self.lbl])
 
@@ -230,3 +234,10 @@ class GANModel:
 
     def add_listener(self, listener: ModelTrainListener):
         self.listeners.append(listener)
+
+    def save_weights(self, fname):
+        self.gan.save_weights(fname)
+
+    def load_weights(self, fname):
+        self.gan.load_weights(fname, by_name=False)
+
