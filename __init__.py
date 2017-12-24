@@ -13,7 +13,8 @@ def main():
         dropout_rate=0.3,
         k_step=5,
         batches_per_period=20,
-        dirname='./weights/cifar10_3/'
+        dirname='./weights/cifar10_3/',
+        save_period=500
     )
     saver = ImageSaver(
         gan,
@@ -30,7 +31,7 @@ def main():
     gan.train(
         data,
         batch_size=256,
-        epochs=200
+        epochs=6000
     )
     # gan.save_weights("./weights/cifar10_3.h5")
 
