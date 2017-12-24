@@ -18,7 +18,7 @@ def main():
         gan,
         num_classes,
         shape,
-        n=5,
+        n=15,
         im_filename='./img/cifar10_3/loaded_{}.jpg'
     )
 

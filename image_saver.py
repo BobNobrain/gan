@@ -60,7 +60,10 @@ class ImageSaver(ModelTrainListener):
     def draw_manifold(self, label, show=True):
         # Рисование цифр из многообразия
         w, h, ch = self.shape
-        figure = np.zeros((w * self.n, h * self.n, ch))
+        if ch == 1:
+            figure = np.zeros((w * self.n, h * self.n))
+        else:
+            figure = np.zeros((w * self.n, h * self.n, ch))
         input_lbl = np.zeros((1, self.num_classes))
         input_lbl[0, label] = 1.
         for i, yi in enumerate(self.grid_x):
