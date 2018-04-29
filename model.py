@@ -107,8 +107,8 @@ class GANModel:
             x = Conv2D(64, kernel_size=(5, 5), activation='relu', padding='same')(x)
             x = Dropout(self.dropout_rate)(x)
 
-            # x = Conv2D(32, kernel_size=(3, 3), activation='relu', padding='same')(x)
-            # x = Dropout(self.dropout_rate)(x)
+            x = Conv2D(32, kernel_size=(3, 3), activation='relu', padding='same')(x)
+            x = Dropout(self.dropout_rate)(x)
 
             x = Conv2D(32, kernel_size=(3, 3), activation='relu', padding='same')(x)
             x = Dropout(self.dropout_rate)(x)
@@ -124,8 +124,8 @@ class GANModel:
             x = Conv2D(128, kernel_size=(7, 7), strides=(2, 2), padding='same')(self.img)
             x = self.add_units_to_conv2d(x, self.lbl)
             x = LeakyReLU()(x)
-            # x = Conv2D(128, kernel_size=(3, 3), padding='same')(x)
-            # x = LeakyReLU()(x)
+            x = Conv2D(128, kernel_size=(3, 3), padding='same')(x)
+            x = LeakyReLU()(x)
             x = Dropout(self.dropout_rate)(x)
             x = MaxPool2D((2, 2), padding='same')(x)
 

@@ -4,6 +4,7 @@ weights
 log.txt
 log/
 __pycache__
+env/
 .idea/**/workspace.xml
 .idea/**/tasks.xml
 .idea/dictionaries
