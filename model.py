@@ -3,7 +3,7 @@ import numpy as np
 from keras.layers import Dropout, Reshape, Flatten, RepeatVector
 from keras.layers import Dense, Input, Conv2D, MaxPool2D, UpSampling2D, concatenate
 from keras.layers.advanced_activations import LeakyReLU
-from keras.models import Model, load_model
+from keras.models import Model
 
 from keras import backend as keras_backend
 import tensorflow as tf
@@ -21,7 +21,7 @@ class GANModel:
             k_step=5,
             batches_per_period=20,
             dirname='./weights/',
-            save_period = 100
+            save_period=100
     ):
         self.sess = None
         # self.num_classes = num_classes
@@ -38,8 +38,8 @@ class GANModel:
         self.step_gen = None
         self.step_dis = None
 
-        self.train_batches_it = None
-        self.test_batches_it = None
+        # self.train_batches_it = None
+        # self.test_batches_it = None
 
         self.generated_z = None
         self.gan = None
@@ -75,16 +75,6 @@ class GANModel:
         self.img = Input(tensor=self.x_)
         self.lbl = Input(tensor=self.y_)
         self.z = Input(tensor=self.z_)
-
-    @staticmethod
-    def gen_batch(x, y, batch_size):
-        n_batches = x.shape[0] // batch_size
-        while True:
-            for i in range(n_batches):
-                yield x[batch_size*i: batch_size*(i+1)], y[batch_size*i: batch_size*(i+1)]
-            idxs = np.random.permutation(y.shape[0])
-            x = x[idxs]
-            y = y[idxs]
 
     def add_units_to_conv2d(self, conv2, units):
         dim1 = int(conv2.shape[1])
@@ -168,7 +158,7 @@ class GANModel:
         optimizer_gen = tf.train.RMSPropOptimizer(0.0003)
         optimizer_dis = tf.train.RMSPropOptimizer(0.0001)
 
-        # Переменные генератора и дискриминаторы (отдельно) для оптимизаторов
+        # Gen & discr variables (separated) for optimizers
         generator_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "generator")
         discrim_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, "discrim")
 
@@ -201,22 +191,23 @@ class GANModel:
     def get_learning_phase():
         return keras_backend.learning_phase()
 
-    def train(self, dataset: Dataset, batch_size=256, epochs=5000):
+    def train(self, dataset: Dataset, epochs=5000):
         l_d = -1
 
-        self.train_batches_it = GANModel.gen_batch(dataset.x_train, dataset.y_train_cat, batch_size)
-        self.test_batches_it = GANModel.gen_batch(dataset.x_test, dataset.y_test_cat, batch_size)
+        train_batches_it = dataset.train_batch_iterator()
+        # TODO: why this is unused?
+        # test_batches_it = dataset.test_batch_iterator()
 
         for i in range(epochs):
             # print('.', end='')
-            b0, b1 = next(self.train_batches_it)
-            zp = np.random.randn(batch_size, self.latent_dim)
+            b0, b1 = next(train_batches_it)
+            zp = np.random.randn(dataset.batch_size, self.latent_dim)
             # Шаги обучения дискриминатора
             # Достанем новый батч
             for j in range(self.k_step):
                 l_d = self.step_d(b0, b1, zp)
-                b0, b1 = next(self.train_batches_it)
-                zp = np.random.randn(batch_size, self.latent_dim)
+                b0, b1 = next(train_batches_it)
+                zp = np.random.randn(dataset.batch_size, self.latent_dim)
                 if l_d < 1.0:
                     break
             # Шаги обучения генератора
@@ -225,8 +216,8 @@ class GANModel:
                 l_d = self.step(b0, b1, zp)
                 if l_d > 0.4:
                     break
-                b0, b1 = next(self.train_batches_it)
-                zp = np.random.randn(batch_size, self.latent_dim)
+                b0, b1 = next(train_batches_it)
+                zp = np.random.randn(dataset.batch_size, self.latent_dim)
 
             # сохраняем модель каждые save_period эпох
             if i % self.save_period == self.save_period - 1:
@@ -258,4 +249,3 @@ class GANModel:
         lp = tf.train.latest_checkpoint(self.dirname)
         saver.restore(self.sess, lp)
         print("Model loaded from: {}".format(lp))
-

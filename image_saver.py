@@ -1,4 +1,5 @@
 import numpy as np
+import time
 from scipy.stats import norm
 from IPython.display import clear_output
 
@@ -71,6 +72,7 @@ class ImageSaver(ModelTrainListener):
                 z_sample = np.zeros((1, self.model.latent_dim))
                 z_sample[:, :2] = np.array([[xi, yi]])
 
+                start = time.time()
                 x_generated = self.model.sess.run(
                     self.model.generated_z,
                     feed_dict={
@@ -83,6 +85,8 @@ class ImageSaver(ModelTrainListener):
                     i * w: (i + 1) * w,
                     j * h: (j + 1) * h
                 ] = image
+                end = time.time()
+                print('TIMING: {} for label {}'.format(end - start, label))
         if show:
             # Визуализация
             plt.figure(figsize=self.fig_size)
