@@ -1,0 +1,6 @@
+#!/bin/bash
+. ./env/bin/activate
+
+# run with logging
+python run_loaded.py
+echo 'Done'

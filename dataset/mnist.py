@@ -6,8 +6,8 @@ from dataset.dataset import Dataset
 
 
 class MnistDataset(Dataset):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, batch_size=32):
+        super(MnistDataset, self).__init__(batch_size=batch_size)
         (x_train, y_train), (x_test, y_test) = mnist.load_data()
         x_train = x_train.astype('float32') / 255.
         x_test = x_test.astype('float32') / 255.

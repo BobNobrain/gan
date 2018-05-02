@@ -22,6 +22,8 @@ class Linnaeus5x32Dataset(FsDataset):
             ),
             batch_size=batch_size
         )
+        if 1200 % batch_size != 0:
+            print('[WARNING] Wrong batch size: {} cannot be looped into 1200 images per class!'.format(batch_size))
         if self.num_classes != 5:
-            print('Warning! Wrong num classes! Expected 5, got {}'.format(self.num_classes))
+            print('[WARNING] Wrong num classes! Expected 5, got {}'.format(self.num_classes))
             self.num_classes = 5

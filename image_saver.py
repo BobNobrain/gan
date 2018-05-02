@@ -23,7 +23,8 @@ class ImageSaver(ModelTrainListener):
             gif_filename='./gif/manifold_{}.gif',
             gif_title='Label: {}\nBatch: {}',
             im_filename='./img/result_{}.jpg',
-            fig_size = (None, None)
+            save_gifs=True,
+            fig_size=(None, None)
     ):
         self.num_classes = num_classes
         self.figs = [[] for _ in range(num_classes)]
@@ -31,6 +32,7 @@ class ImageSaver(ModelTrainListener):
         self.save_periods = list(range(100)) +\
             list(range(100, 1000, 10)) +\
             list(range(1000, 10000, 500))
+        # this is how many generated images we will draw per image
         self.n = n
         self.shape = shape
         self.model = model
@@ -49,6 +51,8 @@ class ImageSaver(ModelTrainListener):
         self.gif_title = gif_title
         self.im_filename = im_filename
 
+        self.save_gifs = save_gifs
+
         # Так как сэмплируем из N(0, I), то сетку узлов, в которых генерируем цифры,
         # берем из обратной функции распределения
         self.grid_x = norm.ppf(np.linspace(0.05, 0.95, n))
@@ -58,7 +62,7 @@ class ImageSaver(ModelTrainListener):
 
         model.add_listener(self)
 
-    def draw_manifold(self, label, show=True):
+    def draw_manifold(self, label, show=True, timing=False):
         # Рисование цифр из многообразия
         w, h, ch = self.shape
         if ch == 1:
@@ -86,7 +90,8 @@ class ImageSaver(ModelTrainListener):
                     j * h: (j + 1) * h
                 ] = image
                 end = time.time()
-                print('TIMING: {} for label {}'.format(end - start, label))
+                if timing:
+                    print('TIMING: {} for label {}'.format(end - start, label))
         if show:
             # Визуализация
             plt.figure(figsize=self.fig_size)
@@ -140,6 +145,7 @@ class ImageSaver(ModelTrainListener):
             # Рисование многообразия для рандомного y
             draw_lbl = np.random.randint(0, self.num_classes)
             # print(draw_lbl)
+            # if self.save_gifs:
             for label in range(self.num_classes):
                 self.figs[label].append(self.draw_manifold(label, show=False))
 

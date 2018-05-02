@@ -6,8 +6,8 @@ from dataset.dataset import Dataset
 
 
 class Cifar10Dataset(Dataset):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, batch_size=32):
+        super(Cifar10Dataset, self).__init__(batch_size=batch_size)
         (x_train, y_train), (x_test, y_test) = cifar10.load_data()
         x_train = x_train.astype('float32') / 255.
         x_test = x_test.astype('float32') / 255.

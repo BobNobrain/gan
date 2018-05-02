@@ -7,10 +7,11 @@ from model import GANModel
 
 def main():
     print('Initializing dataset...')
-    data = Linnaeus5x32Dataset(batch_size=256)
+    data = Linnaeus5x32Dataset(batch_size=200)
+    # data = Cifar10Dataset(batch_size=256)
     print('Initializing objects...')
     gan = GANModel(
-        latent_dim=2,
+        latent_dim=4,
         dropout_rate=0.3,
         k_step=5,
         batches_per_period=20,
@@ -21,9 +22,9 @@ def main():
         gan,
         data.num_classes,
         data.shape,
-        n=10,
-        gif_filename='./gif/linnaeus5x32/{}.gif',
-        im_filename='./img/linnaeus5x32/{}.jpg'
+        n=5,
+        gif_filename='./gif/lin32/{}.gif',
+        im_filename='./img/lin32/{}.jpg'
     )
 
     print('Initializing model...')
@@ -31,7 +32,8 @@ def main():
     print('Start training model...')
     gan.train(
         data,
-        epochs=4000
+        epochs=8000
     )
+
 
 main()

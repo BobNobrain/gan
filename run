@@ -1,6 +1,5 @@
 #!/bin/bash
-# conda
-. activate env
+. ./env/bin/activate
 
 echo `date` > "log.txt"
 # run with logging
