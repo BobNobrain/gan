@@ -232,7 +232,7 @@ class GANModel:
                     l.on_period(period)
                 print('epoch: {epoch}; loss_gen: {loss_gen}; loss_dis: {loss_dis}'.format(
                     epoch=i,
-                    loss_diss=l_d,
+                    loss_dis=l_d,
                     loss_gen=l_g
                 ))
 
