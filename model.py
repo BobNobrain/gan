@@ -193,6 +193,7 @@ class GANModel:
 
     def train(self, dataset: Dataset, epochs=5000):
         l_d = -1
+        l_g = -1
 
         train_batches_it = dataset.train_batch_iterator()
         # TODO: why this is unused?
@@ -212,9 +213,8 @@ class GANModel:
                     break
             # Шаги обучения генератора
             for j in range(self.k_step):
-
-                l_d = self.step(b0, b1, zp)
-                if l_d > 0.4:
+                l_g = self.step(b0, b1, zp)
+                if l_g > 0.4:
                     break
                 b0, b1 = next(train_batches_it)
                 zp = np.random.randn(dataset.batch_size, self.latent_dim)
@@ -230,7 +230,11 @@ class GANModel:
                 period = i // self.batches_per_period
                 for l in self.listeners:
                     l.on_period(period)
-                print('epoch: {}; loss: {}'.format(i, l_d))
+                print('epoch: {epoch}; loss_gen: {loss_gen}; loss_dis: {loss_dis}'.format(
+                    epoch=i,
+                    loss_diss=l_d,
+                    loss_gen=l_g
+                ))
 
         for l in self.listeners:
             l.on_finished()
