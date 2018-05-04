@@ -181,9 +181,12 @@ class DCGANModel(CModel):
 
         self.model = self.gan(g=gm, d=dm)
         self.gm = gm
+        self.sess = K.get_session()
 
     def train(self, dataset: Dataset, epochs=5000):
         sess = K.get_session()
+        if sess != self.sess:
+            raise ValueError('Sessions do not match!')
         train_batches_it = dataset.train_batch_iterator()
 
         for i in range(epochs):
@@ -218,8 +221,10 @@ class DCGANModel(CModel):
         # ignoring input_lbl for now, as model is unconditional
         i = np.random.normal(loc=0., scale=1., size=(1, self.latent_dim))
         gened = self.gm.predict(i, batch_size=1)
-        gened *= 0.5
-        gened += 0.5
+        min_pix = np.amin(gened)
+        d_pix = np.amax(gened) - min_pix
+        gened -= min_pix
+        gened *= 1. / d_pix
 
         return gened
 

@@ -2,11 +2,15 @@
 from dataset.cifar10 import Cifar10Dataset
 # from dataset.linnaeus5_32 import Linnaeus5x32Dataset
 from image_saver import ImageSaver
-from models.gan import GANModel
+# from models.gan import GANModel
 from models.dcgan import DCGANModel
 
 
-def main():
+def main(
+        resume=False,
+        epochs=5000,
+        print_model_summary=False
+):
     print('Initializing dataset...')
     # data = Linnaeus5x32Dataset(batch_size=200)
     data = Cifar10Dataset(batch_size=256)
@@ -35,12 +39,19 @@ def main():
     )
 
     print('Initializing model...')
-    model.init_model(data.num_classes, data.shape, print_summary=True)
+    model.init_model(data.num_classes, data.shape, print_summary=print_model_summary)
+    if resume:
+        print('Loading weights...')
+        model.load_weights()
     print('Start training model...')
     model.train(
         data,
-        epochs=500
+        epochs=epochs
     )
 
 
-main()
+main(
+    print_model_summary=True,
+    epochs=20000,
+    resume=True
+)
