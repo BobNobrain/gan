@@ -8,11 +8,11 @@ from keras.models import Model
 from keras import backend as keras_backend
 import tensorflow as tf
 
-from model_train_listener import ModelTrainListener
 from dataset.dataset import Dataset
+from models.model import Model as CModel
 
 
-class GANModel:
+class GANModel(CModel):
     def __init__(
             self,
             # num_classes,
@@ -23,14 +23,14 @@ class GANModel:
             dirname='./weights/',
             save_period=100
     ):
-        self.sess = None
-        # self.num_classes = num_classes
-        self.latent_dim = latent_dim
+        super(GANModel, self).__init__(
+            latent_dim=latent_dim,
+            batches_per_period=batches_per_period,
+            dirname=dirname,
+            save_period=save_period
+        )
         self.k_step = k_step  # Количество шагов, которые могут делать дискриминатор и генератор во внутреннем цикле
-        self.batches_per_period = batches_per_period
         self.dropout_rate = dropout_rate
-        self.dirname = dirname
-        self.save_period = save_period
 
         self.L_gen = None
         self.L_dis = None
@@ -38,22 +38,10 @@ class GANModel:
         self.step_gen = None
         self.step_dis = None
 
-        # self.train_batches_it = None
-        # self.test_batches_it = None
-
         self.generated_z = None
         self.gan = None
         self.gan_model = None
 
-        self.listeners = []
-
-        # self.x_ = tf.placeholder(tf.float32, shape=(None, 28, 28, 1), name='image')
-        # self.y_ = tf.placeholder(tf.float32, shape=(None, num_classes), name='labels')
-        # self.z_ = tf.placeholder(tf.float32, shape=(None, latent_dim), name='z')
-        #
-        # self.img = Input(tensor=self.x_)
-        # self.lbl = Input(tensor=self.y_)
-        # self.z = Input(tensor=self.z_)
         self.x_ = None
         self.y_ = None
         self.z_ = None
@@ -187,7 +175,7 @@ class GANModel:
         })
         return l_dis
 
-    @staticmethod
+    # @staticmethod
     def get_learning_phase():
         return keras_backend.learning_phase()
 
@@ -239,17 +227,12 @@ class GANModel:
         for l in self.listeners:
             l.on_finished()
 
-    def add_listener(self, listener: ModelTrainListener):
-        self.listeners.append(listener)
-
-    def save_weights(self, step):
-        # self.gan_model.save_weights(fname)
-        saver = tf.train.Saver()
-        saver.save(self.sess, self.dirname + 'n', global_step=step)
-
-    def load_weights(self):
-        print('Loading weights...')
-        saver = tf.train.Saver()
-        lp = tf.train.latest_checkpoint(self.dirname)
-        saver.restore(self.sess, lp)
-        print("Model loaded from: {}".format(lp))
+    def feed(self, z_sample, input_lbl):
+        return self.sess.run(
+            self.generated_z,
+            feed_dict={
+                self.z: z_sample,
+                self.lbl: input_lbl,
+                GANModel.get_learning_phase(): 0
+            }
+        )

@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 import matplotlib
 
-from model import GANModel
+from models.model import Model
 from model_train_listener import ModelTrainListener
 
 plt.switch_backend('agg')
@@ -16,7 +16,7 @@ plt.switch_backend('agg')
 class ImageSaver(ModelTrainListener):
     def __init__(
             self,
-            model: GANModel,
+            model: Model,
             num_classes,
             shape,
             n=10,
@@ -77,13 +77,15 @@ class ImageSaver(ModelTrainListener):
                 z_sample[:, :2] = np.array([[xi, yi]])
 
                 start = time.time()
-                x_generated = self.model.sess.run(
-                    self.model.generated_z,
-                    feed_dict={
-                        self.model.z: z_sample,
-                        self.model.lbl: input_lbl,
-                        GANModel.get_learning_phase(): 0
-                    })
+                x_generated = self.model.feed(z_sample=z_sample, input_lbl=input_lbl)
+                # x_generated = self.model.sess.run(
+                #     self.model.generated_z,
+                #     feed_dict={
+                #         self.model.z: z_sample,
+                #         self.model.lbl: input_lbl,
+                #         self.model.get_learning_phase(): 0
+                #     }
+                # )
                 image = x_generated[0].squeeze()
                 figure[
                     i * w: (i + 1) * w,

@@ -1,7 +1,7 @@
 # from dataset.mnist import MnistDataset
 # from dataset.cifar10 import Cifar10Dataset
 from image_saver import ImageSaver
-from model import GANModel
+from models.gan import GANModel
 
 
 def main():
@@ -9,7 +9,7 @@ def main():
     shape = (32, 32, 3)  # cifar10
     # shape = (28, 28, 1)  # mnist
     gan = GANModel(
-        latent_dim=2,
+        latent_dim=4,
         dropout_rate=0.3,
         k_step=5,
         batches_per_period=20,
