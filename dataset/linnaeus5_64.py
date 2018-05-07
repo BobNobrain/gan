@@ -1,16 +1,16 @@
 import os
 from dataset.fs_dataset import FsDataset, AugmentationSettings
 
-data_dir = os.environ['LINNAEUS32_DATA_PATH']
+data_dir = os.environ['LINNAEUS64_DATA_PATH']
 train_dirname = 'train'
 test_dirname = 'test'
 
 
-class Linnaeus5x32Dataset(FsDataset):
+class Linnaeus5x64Dataset(FsDataset):
     def __init__(self, batch_size):
-        super(Linnaeus5x32Dataset, self).__init__(
+        super(Linnaeus5x64Dataset, self).__init__(
             data_dir,
-            (32, 32, 3),
+            (64, 64, 3),
             train_subdir=train_dirname,
             test_subdir=test_dirname,
             train_augmentation=AugmentationSettings(

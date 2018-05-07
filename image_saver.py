@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import os
 from scipy.stats import norm
 from IPython.display import clear_output
 
@@ -154,6 +155,21 @@ class ImageSaver(ModelTrainListener):
             self.periods.append(period)
 
     def on_finished(self, make_gif=True, make_img=True):
+        try:
+            if make_gif:
+                f = self.gif_filename.format('f')
+                dirname = os.path.dirname(f)
+                if not os.path.exists(dirname):
+                    print('Directory {} does not exist, creating it...'.format(dirname))
+                    os.makedirs(dirname)
+            if make_img:
+                f = self.im_filename.format('f')
+                dirname = os.path.dirname(f)
+                if not os.path.exists(dirname):
+                    print('Directory {} does not exist, creating it...'.format(dirname))
+                    os.makedirs(dirname)
+        except:
+            pass
         for label in range(self.num_classes):
             print('Drawing images for {}...'.format(label))
             # try:

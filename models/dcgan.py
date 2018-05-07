@@ -67,12 +67,21 @@ class DCGANModel(CModel):
 
         (img_w, img_h, ch) = shape
 
-        i = deconv(i, nop=ngf * 8, kw=4, oh=4, ow=4, std=1, bm='valid')
-        i = deconv(i, nop=ngf * 4, kw=4, oh=8, ow=8, std=2)
-        i = deconv(i, nop=ngf * 2, kw=4, oh=16, ow=16, std=2)
-        i = deconv(i, nop=ngf * 1, kw=4, oh=32, ow=32, std=2)
+        if img_w == 32 and img_h == 32:
+            i = deconv(i, nop=ngf * 8, kw=4, oh=4, ow=4, std=1, bm='valid')
+            i = deconv(i, nop=ngf * 4, kw=4, oh=8, ow=8, std=2)
+            i = deconv(i, nop=ngf * 2, kw=4, oh=16, ow=16, std=2)
+            i = deconv(i, nop=ngf * 1, kw=4, oh=32, ow=32, std=2)
+        elif img_w == 64 and img_h == 64:
+            i = deconv(i, nop=ngf * 16, kw=4, oh=4, ow=4, std=1, bm='valid')
+            i = deconv(i, nop=ngf * 8, kw=4, oh=8, ow=8, std=2)
+            i = deconv(i, nop=ngf * 4, kw=4, oh=16, ow=16, std=2)
+            i = deconv(i, nop=ngf * 2, kw=4, oh=32, ow=32, std=2)
+            i = deconv(i, nop=ngf * 1, kw=4, oh=64, ow=64, std=2)
+        else:
+            raise ValueError('Expect 32x32 or 64x64 dataset')
 
-        i = deconv(i, nop=3, kw=4, oh=img_h, ow=img_w, std=1, tail=False)  # out : 32x32
+        i = deconv(i, nop=3, kw=4, oh=img_h, ow=img_w, std=1, tail=False)
         i = Activation('tanh')(i)
 
         m = Model(input=inp, output=i)
@@ -92,6 +101,8 @@ class DCGANModel(CModel):
         i = conv(i, ndf * 4, 4, std=2)
         i = concat_diff(i)
         i = conv(i, ndf * 8, 4, std=2)
+        i = concat_diff(i)
+        i = conv(i, ndf * 16, 4, std=2)
         i = concat_diff(i)
 
         # 1x1
@@ -173,10 +184,11 @@ class DCGANModel(CModel):
 
     def init_model(self, num_classes, shape, print_summary=False):
         gm = self.gen(shape=shape)
-        dm = self.dis(shape=shape)
-
         if print_summary:
             gm.summary(line_length=120)
+
+        dm = self.dis(shape=shape)
+        if print_summary:
             dm.summary(line_length=120)
 
         self.model = self.gan(g=gm, d=dm)
