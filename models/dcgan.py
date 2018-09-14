@@ -93,6 +93,7 @@ class DCGANModel(CModel):
         i = inp
 
         ndf = 24
+        (img_w, img_h, ch) = shape
 
         i = conv(i, ndf * 1, 4, std=2, usebn=False)
         i = concat_diff(i)
@@ -102,8 +103,9 @@ class DCGANModel(CModel):
         i = concat_diff(i)
         i = conv(i, ndf * 8, 4, std=2)
         i = concat_diff(i)
-        i = conv(i, ndf * 16, 4, std=2)
-        i = concat_diff(i)
+        if img_w == 64 and img_h == 64:
+            i = conv(i, ndf * 16, 4, std=2)
+            i = concat_diff(i)
 
         # 1x1
         i = Convolution2D(1, 2, 2, border_mode='valid')(i)
@@ -171,6 +173,9 @@ class DCGANModel(CModel):
             # actual GAN trainer
             nonlocal train_step, losses, noise, real_data, learning_phase
 
+            batch_image *= 2
+            batch_image -= 1
+
             res = sess.run([train_step, losses], feed_dict={
                 noise: z_input,
                 real_data: batch_image,
@@ -233,10 +238,13 @@ class DCGANModel(CModel):
         # ignoring input_lbl for now, as model is unconditional
         i = np.random.normal(loc=0., scale=1., size=(1, self.latent_dim))
         gened = self.gm.predict(i, batch_size=1)
-        min_pix = np.amin(gened)
-        d_pix = np.amax(gened) - min_pix
-        gened -= min_pix
-        gened *= 1. / d_pix
+        # min_pix = -1  # np.amin(gened)
+        # d_pix = 1  # np.amax(gened) - min_pix
+        # gened -= min_pix
+        # gened *= 1. / d_pix
+        # [-1; 1] -> [0; 1]
+        gened *= 0.5
+        gened += 0.5
 
         return gened
 
